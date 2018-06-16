@@ -10,15 +10,14 @@ import java.awt.geom.Point2D;
 import java.io.*;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.JOptionPane;
 import maps.java.Geocoding;
 import maps.java.MapsJava;
 import Estructuras.Grafo;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 
 /**
  *
@@ -27,8 +26,7 @@ import Estructuras.Grafo;
 public class GestionLugarDestino extends javax.swing.JFrame {
     
     DefaultListModel<String> listModel;
-    int contador = 0;
-    private UbicacionActual ubicacion = new UbicacionActual();
+    int contador = 1;
     /**
      * Creates new form GestionLugarDestino
      */
@@ -45,9 +43,6 @@ public class GestionLugarDestino extends javax.swing.JFrame {
             if(resultadoDir.x != 0.0 && resultadoDir.y != 0.0){
                 DireccionEncGest.setText(datosUbi.getAddressFound());
                 
-                ubicacion.setDireccion(datosUbi.getAddressFound());
-                ubicacion.setLatitud(resultadoDir.x);
-                ubicacion.setLongitud(resultadoDir.y);
             }else{
                 JOptionPane.showMessageDialog(null, "No se encuentra el lugar");
             }
@@ -70,11 +65,7 @@ public class GestionLugarDestino extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Llene el espacio");
         }
     }
-//    public void eliminarLugar() throws FileNotFoundException, IOException{
-//        int index = LugaresAgregadosJlist.getSelectedIndex();
-//        listModel.remove(index);
-//
-//    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -103,6 +94,7 @@ public class GestionLugarDestino extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         LugaresAgregadosJlist = new javax.swing.JList<>();
         EliminarLugarBtn = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -151,47 +143,56 @@ public class GestionLugarDestino extends javax.swing.JFrame {
             }
         });
 
+        jButton6.setText("Buscar Lugares");
+        jButton6.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton6MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel1)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel2)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(BuscarDirGesBtn))
-                        .addComponent(jSeparator1)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel3)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel4)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGap(45, 45, 45)
-                            .addComponent(BuscarCooGestBtn))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel5)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(DireccionEncGest))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel6)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(AgregarDestinoBtn))
-                        .addComponent(jScrollPane1))
-                    .addComponent(EliminarLugarBtn))
-                .addContainerGap(390, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(BuscarDirGesBtn))
+                    .addComponent(jSeparator1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(45, 45, 45)
+                        .addComponent(BuscarCooGestBtn))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DireccionEncGest))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(AgregarDestinoBtn))
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(EliminarLugarBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton6)))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -230,7 +231,9 @@ public class GestionLugarDestino extends javax.swing.JFrame {
                 .addGap(34, 34, 34)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(EliminarLugarBtn)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(EliminarLugarBtn)
+                    .addComponent(jButton6))
                 .addContainerGap(67, Short.MAX_VALUE))
         );
 
@@ -286,19 +289,21 @@ public class GestionLugarDestino extends javax.swing.JFrame {
         listModel.remove(index);
         Grafo grafo = new Grafo ();
         grafo.eliminarVertice(foo);
-        
         try{
             FileReader fr = new FileReader("Lugares.txt");
             BufferedReader br = new BufferedReader(fr);
             
-            String line = br.readLine();
-            
-            while ((line = br.readLine()) != null && line.indexOf(s) == -1){
+            String line;
+            while ((line = br.readLine()) != null){
                 System.out.println(line);
-                FileWriter writer = new FileWriter("Lugares.txt", true);
-                writer.write("");
-                writer.close();
             }
+            
+//            while ((line = br.readLine()) != null && line.indexOf(s) == -1){
+//                System.out.println(line);
+//                FileWriter writer = new FileWriter("Lugares.txt", true);
+//                writer.write("");
+//                writer.close();
+//            }
             br.close();
         }catch (IOException e){
             System.out.println("File not found");
@@ -308,6 +313,14 @@ public class GestionLugarDestino extends javax.swing.JFrame {
    
         // TODO add your handling code here:
     }//GEN-LAST:event_EliminarLugarBtnMouseClicked
+
+    private void jButton6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton6MouseClicked
+        this.setVisible(false);
+        GestionLugaresInteres formulario=new GestionLugaresInteres();
+        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        formulario.setLocation((d.width/2)-(formulario.getWidth()/2), (d.height/2)-(formulario.getHeight()/2));
+        formulario.setVisible(true);
+    }//GEN-LAST:event_jButton6MouseClicked
 
     /**
      * @param args the command line arguments
@@ -354,6 +367,7 @@ public class GestionLugarDestino extends javax.swing.JFrame {
     private javax.swing.JTextField LngTxtField;
     private javax.swing.JTextField LtdTxtField;
     private javax.swing.JList<String> LugaresAgregadosJlist;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

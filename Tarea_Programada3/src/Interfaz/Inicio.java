@@ -6,11 +6,16 @@
 package Interfaz;
 
 
+import Estructuras.Arbol;
+import Estructuras.BinarySearchTree;
+import Estructuras.Grafo;
+import Estructuras.TreeNode;
 import java.util.*;
 import Estructuras.UbicacionActual;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.geom.Point2D;
+import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import javax.swing.JOptionPane;
@@ -21,8 +26,9 @@ import maps.java.MapsJava;
  * @author Rolo
  */
 public class Inicio extends javax.swing.JFrame {
-    
+    int contador = 0;
     private UbicacionActual ubicacion = new UbicacionActual();
+    private Arbol arbol = new Arbol();
     /**
      * Creates new form GestionLugaresDestino
      */
@@ -41,6 +47,8 @@ public class Inicio extends javax.swing.JFrame {
                 ubicacion.setDireccion(datosUbi.getAddressFound());
                 ubicacion.setLatitud(resultadoDir.x);
                 ubicacion.setLongitud(resultadoDir.y);
+                
+                arbol.setNombre(datosUbi.getAddressFound());
             }else{
                 JOptionPane.showMessageDialog(null, "No se encuentra el lugar");
             }
@@ -265,6 +273,29 @@ public class Inicio extends javax.swing.JFrame {
                     (d.height/2)-(lugarDestinoVentana.getHeight()/2));
             lugarDestinoVentana.setSize(new Dimension(400, 350));
             lugarDestinoVentana.setVisible(true);
+        }
+        try {
+            contador=contador+1;
+            
+            Grafo grafo = new Grafo();
+            grafo.agregarVertice(contador);
+            
+//            BinarySearchTree arbol = new BinarySearchTree();
+//            arbol.insert(DireccionEncontrada.getText());
+            Arbol arbolActual = new Arbol();
+            arbolActual.setNombre(DireccionEncontrada.getText());
+            
+            FileWriter writer = new FileWriter("Lugares.txt", true);
+            writer.write(contador+" " + DireccionEncontrada.getText());
+            writer.write(System.getProperty("line.separator"));
+            writer.close();
+            
+            FileWriter writer2 = new FileWriter("Favoritos.txt", true);
+            writer2.write(DireccionEncontrada.getText());
+            writer2.write(System.getProperty("line.separator"));
+            writer2.close();
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Error");
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_ContinuarBtnMouseClicked
