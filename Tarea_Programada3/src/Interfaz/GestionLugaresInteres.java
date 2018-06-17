@@ -5,13 +5,11 @@
  */
 package Interfaz;
 
-import Estructuras.Arbol;
 import Estructuras.BinarySearchTree;
-import Estructuras.LinkedList;
+import Estructuras.LinkedList1;
 import Estructuras.Raiz;
 import Estructuras.TablaLugares;
 import java.awt.Image;
-import javax.swing.DefaultListModel;
 import maps.java.Places;
 import Estructuras.UbicacionActual;
 import java.awt.Dimension;
@@ -21,8 +19,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Scanner;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.ListSelectionModel;
@@ -35,12 +31,11 @@ import maps.java.StreetView;
  */
 public class GestionLugaresInteres extends javax.swing.JFrame {
     
-    LinkedList lista = new LinkedList();
+    LinkedList1 lista = new LinkedList1();
     private Places ObjPlaces=new Places();
     private UbicacionActual ubicacion=new UbicacionActual();
     private String[][] resultadoPlaces;
     private double fov=0.0;
-    private DefaultListModel modeloLista = new DefaultListModel();
 
     /**
      * Creates new form GestionLugaresInteres
@@ -53,8 +48,6 @@ public class GestionLugaresInteres extends javax.swing.JFrame {
     }
     private void buscarLocales() throws UnsupportedEncodingException, MalformedURLException, IOException{
         String keyword=LugarIntTxtField.getText();
-//        resultadoPlaces=ObjPlaces.getPlaces(ObjUbicacion.getLatitud(), ObjUbicacion.getLongitud(), 
-//                3000,keyword,null, this.buscarPor(),this.tiposLocal());
         resultadoPlaces=ObjPlaces.getPlaces(ubicacion.getLatitud(), ubicacion.getLongitud(),
                 Integer.parseInt(RadioTxtField.getText()), keyword, null, Places.Rankby.distance, null);
         this.rellenarTabla(resultadoPlaces);
@@ -104,25 +97,8 @@ public class GestionLugaresInteres extends javax.swing.JFrame {
         writer.write(nombreLugar);
         writer.write(System.getProperty("line.separator"));
         writer.close();
-        
+        ConfirmarTxtField.setText("Confirmado");
          
-        
-
-//            lista.insert(lugarConfirmado);
-//            System.out.println(lista);
-        
-        
-        
-         
-//         if (!lugarConfirmado.equals("confirmar")){  
-//             ConfirmarTxtField.setText("confirmar");           
-//             if (lugarConfirmado.equals("pare")){                
-//                 System.out.println("SI");
-//                 arbol.insert(nombreLugar);
-//                 ConfirmarTxtField.setText("");
-//             } 
-//         }
-//         System.out.println("\n"+raiz.getNombre()+"\n");
          
     }
 
@@ -300,6 +276,7 @@ public class GestionLugaresInteres extends javax.swing.JFrame {
         Raiz raiz = new Raiz();        
         if(raiz.getNombre()==null){
             raiz.setNombre(ubicacion.getDireccion());
+            lista.insert(raiz.getNombre());
             arbol.insert(raiz.getNombre());
         }
         try{
@@ -312,8 +289,14 @@ public class GestionLugaresInteres extends javax.swing.JFrame {
                 arbol.insert(lista.getElementValue(lista.getSize()-lista.getSize()).toString());
                 lista.EliminarElemento(lista.getSize()-lista.getSize());            
                 }
-                System.out.print("Lo siguiente es el arbol"+"\n");
+                System.out.println("Arbol Preorden: ");
                 arbol.printPreorder();
+                System.out.println("\n");
+                System.out.println("Arbol Inorden: ");
+                arbol.printInorder();
+                System.out.println("\n");
+                System.out.println("Arbol PostOrden: ");
+                arbol.printPostorder();
             }           
             confirmarFavorito();    
         }catch(Exception e){

@@ -5,7 +5,8 @@
  */
 package Interfaz;
 
-import Estructuras.UbicacionActual;
+import org.jsoup.Jsoup;
+import Estructuras.ListaGuardada;
 import java.awt.geom.Point2D;
 import java.io.*;
 import java.io.UnsupportedEncodingException;
@@ -16,8 +17,18 @@ import javax.swing.JOptionPane;
 import maps.java.Geocoding;
 import maps.java.MapsJava;
 import Estructuras.Grafo;
+import Estructuras.LinkedList1;
+import Estructuras.UbicacionActual;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Toolkit;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import maps.java.Route;
+import maps.java.StaticMaps;
 
 /**
  *
@@ -27,6 +38,13 @@ public class GestionLugarDestino extends javax.swing.JFrame {
     
     DefaultListModel<String> listModel;
     int contador = 1;
+    ListaGuardada listaNueva = new ListaGuardada();
+    LinkedList1 listaNuevaCopia = new LinkedList1();
+    LinkedList1 lista = new LinkedList1();
+    LinkedList1 lista2 = new LinkedList1();
+    Grafo grafo = new Grafo();
+    Route ObjRuta=new Route();
+    String[][] resultadoRuta;
     /**
      * Creates new form GestionLugarDestino
      */
@@ -34,6 +52,7 @@ public class GestionLugarDestino extends javax.swing.JFrame {
         initComponents();
         MapsJava.setKey("AIzaSyBXTa2acjXrIwo0QQLj5bKl48h08qIMpNs");
         listModel = new DefaultListModel<>();
+        listaNueva.setLista(lista);
     }
     
     private void buscarDireccion () throws UnsupportedEncodingException, MalformedURLException{
@@ -41,7 +60,11 @@ public class GestionLugarDestino extends javax.swing.JFrame {
             Geocoding datosUbi = new Geocoding();
             Point2D.Double resultadoDir = datosUbi.getCoordinates(DireccionGestTxtField.getText());
             if(resultadoDir.x != 0.0 && resultadoDir.y != 0.0){
+                LtdTxtField.setText(Double.toString(resultadoDir.x));
+                LngTxtField.setText(Double.toString(resultadoDir.y));
                 DireccionEncGest.setText(datosUbi.getAddressFound());
+                
+                
                 
             }else{
                 JOptionPane.showMessageDialog(null, "No se encuentra el lugar");
@@ -66,6 +89,18 @@ public class GestionLugarDestino extends javax.swing.JFrame {
         }
     }
     
+    private void dibujarTabla(String[][] datosRuta){
+        String[] columnas=new String[3];
+        columnas[0]="Duración tramo";columnas[1]="Distancia tramo";columnas[2]="Indicaciones";
+        TableModel tableModel=new DefaultTableModel(datosRuta, columnas);
+        this.RutaTabla.setModel(tableModel);
+    }
+    private void dibujarMapa(String referencia) throws MalformedURLException, UnsupportedEncodingException{
+        StaticMaps ObjStatic=new StaticMaps();
+        Image imagenRuta=ObjStatic.getStaticMapRoute(new Dimension(300,200),
+                1, StaticMaps.Format.png, StaticMaps.Maptype.roadmap, referencia);
+        MapaImg.setIcon(new ImageIcon(imagenRuta));
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -95,6 +130,14 @@ public class GestionLugarDestino extends javax.swing.JFrame {
         LugaresAgregadosJlist = new javax.swing.JList<>();
         EliminarLugarBtn = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
+        ConfirmarBtn = new javax.swing.JButton();
+        ArmarRuta = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        TransporteBox = new javax.swing.JComboBox<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        RutaTabla = new javax.swing.JTable();
+        MapaImg = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -150,91 +193,184 @@ public class GestionLugarDestino extends javax.swing.JFrame {
             }
         });
 
+        ConfirmarBtn.setText("Confirmar");
+        ConfirmarBtn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ConfirmarBtnMouseClicked(evt);
+            }
+        });
+
+        ArmarRuta.setText("Armar Ruta");
+        ArmarRuta.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ArmarRutaMouseClicked(evt);
+            }
+        });
+
+        jLabel7.setText("Transporte:");
+
+        TransporteBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "bicycling", "driving", "transit", "walking" }));
+
+        RutaTabla.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Duración", "Distancia", "Indicaciones"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        RutaTabla.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                RutaTablaMousePressed(evt);
+            }
+        });
+        jScrollPane2.setViewportView(RutaTabla);
+
+        MapaImg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        jButton3.setText("Ruta General");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton6)
+                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(BuscarDirGesBtn))
-                    .addComponent(jSeparator1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jSeparator1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(45, 45, 45)
-                        .addComponent(BuscarCooGestBtn))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(DireccionEncGest))
+                                .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(BuscarDirGesBtn))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel3)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(45, 45, 45)
+                                .addComponent(BuscarCooGestBtn))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(jLabel5)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(DireccionEncGest))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(jLabel7)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(TransporteBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(AgregarDestinoBtn))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(ConfirmarBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(EliminarLugarBtn)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(ArmarRuta))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(AgregarDestinoBtn))
-                    .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(EliminarLugarBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton6)))
-                .addContainerGap(38, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 514, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(21, 21, 21))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(MapaImg, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton3)
+                        .addGap(27, 27, 27))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(BuscarDirGesBtn))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap()
+                        .addComponent(jLabel1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel2)
+                                    .addComponent(DireccionGestTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(BuscarDirGesBtn))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel3)
+                                    .addComponent(LtdTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel4)
+                                    .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(77, 77, 77)
+                                .addComponent(BuscarCooGestBtn)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(LngTxtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel6)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(31, 31, 31)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(DireccionEncGest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(BuscarCooGestBtn)))
-                .addGap(59, 59, 59)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(DireccionEncGest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6)
-                    .addComponent(AgregarDestinoBtn))
-                .addGap(34, 34, 34)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(EliminarLugarBtn)
-                    .addComponent(jButton6))
-                .addContainerGap(67, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(25, 25, 25)
+                                .addComponent(MapaImg, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addContainerGap(202, Short.MAX_VALUE)
+                                .addComponent(jButton3)))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel7)
+                                    .addComponent(TransporteBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(AgregarDestinoBtn))
+                                .addGap(20, 20, 20)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(EliminarLugarBtn)
+                            .addComponent(ConfirmarBtn)
+                            .addComponent(ArmarRuta))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                        .addComponent(jButton6)))
+                .addContainerGap())
         );
 
         pack();
@@ -258,23 +394,45 @@ public class GestionLugarDestino extends javax.swing.JFrame {
 
     private void AgregarDestinoBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AgregarDestinoBtnMouseClicked
         String lugar = DireccionEncGest.getText().toString();
+//        UbicacionActual ubicacion = new UbicacionActual();
+//        LinkedList lista = new LinkedList();
+//        ListaGuardada listaNueva = new ListaGuardada();
+//        int contador=0;
         if(lugar.equals("")){
             JOptionPane.showMessageDialog(null, "No hay información encontrada");
         }else{
         try {
-            contador=contador+1;
-            Grafo grafo = new Grafo();
-            grafo.agregarVertice(contador);
-            listModel.addElement(contador+" " + lugar);
+            listModel.addElement(lugar);
             LugaresAgregadosJlist.setModel(listModel);
+//            if(){
+//                while(lista.getSize()==contador){
+//                
+//                }}
             
-            FileWriter writer = new FileWriter("Lugares.txt", true);
-            writer.write(contador+" " + lugar);
-            writer.write(System.getProperty("line.separator"));
-            writer.close();
-            JOptionPane.showMessageDialog(null, "Agregado");
-            DireccionEncGest.setText("");
-            grafo.imprimeGrafo();
+            
+//            System.out.println(listaNueva.getLista());
+            
+//            ubicacion.setDireccion(lugar);
+            
+            
+//            System.out.println("\n"+listaNueva.getLista());
+
+//            listaNueva.getLista().insert(lugar);
+//            System.out.println("\n"+listaNueva.getLista());
+            
+//            contador=contador+1;
+//            Grafo grafo = new Grafo();
+//            grafo.agregarVertice(contador);
+//            listModel.addElement(contador+" " + lugar);
+//            LugaresAgregadosJlist.setModel(listModel);
+//            
+//            FileWriter writer = new FileWriter("Lugares.txt", true);
+//            writer.write(contador+" " + lugar);
+//            writer.write(System.getProperty("line.separator"));
+//            writer.close();
+//            JOptionPane.showMessageDialog(null, "Agregado");
+//            DireccionEncGest.setText("");
+//            grafo.imprimeGrafo();
         }catch (Exception e){
             JOptionPane.showMessageDialog(null, "Error");
         }
@@ -283,31 +441,28 @@ public class GestionLugarDestino extends javax.swing.JFrame {
 
     private void EliminarLugarBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_EliminarLugarBtnMouseClicked
         int index = LugaresAgregadosJlist.getSelectedIndex();
-        String s = LugaresAgregadosJlist.getSelectedValue();
-        String word = s.substring(0, 1);
-        int foo = Integer.parseInt(word);
         listModel.remove(index);
-        Grafo grafo = new Grafo ();
-        grafo.eliminarVertice(foo);
-        try{
-            FileReader fr = new FileReader("Lugares.txt");
-            BufferedReader br = new BufferedReader(fr);
-            
-            String line;
-            while ((line = br.readLine()) != null){
-                System.out.println(line);
-            }
-            
-//            while ((line = br.readLine()) != null && line.indexOf(s) == -1){
+
+//        int index = LugaresAgregadosJlist.getSelectedIndex();
+//        String s = LugaresAgregadosJlist.getSelectedValue();
+//        String word = s.substring(0, 1);
+//        int foo = Integer.parseInt(word);
+//        listModel.remove(index);
+//        Grafo grafo = new Grafo ();
+//        grafo.eliminarVertice(foo);
+//        try{
+//            FileReader fr = new FileReader("Lugares.txt");
+//            BufferedReader br = new BufferedReader(fr);
+//            
+//            String line;
+//            while ((line = br.readLine()) != null){
 //                System.out.println(line);
-//                FileWriter writer = new FileWriter("Lugares.txt", true);
-//                writer.write("");
-//                writer.close();
 //            }
-            br.close();
-        }catch (IOException e){
-            System.out.println("File not found");
-        }
+//            
+//            br.close();
+//        }catch (IOException e){
+//            System.out.println("File not found");
+//        }
         
         
    
@@ -315,12 +470,301 @@ public class GestionLugarDestino extends javax.swing.JFrame {
     }//GEN-LAST:event_EliminarLugarBtnMouseClicked
 
     private void jButton6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton6MouseClicked
+//        listaNueva.getLista();
+//        System.out.println("Esta es la lista: "+listaNueva.getLista());
+        int contador=1;
+        while(listaNueva.getLista().getSize()!=0){
+//            System.out.println(listaNueva.getLista().getElementValue(0));
+            grafo.agregarVertice(contador);
+            listaNueva.getLista().EliminarElemento(0);
+            contador=contador+1;
+        }
+        grafo.imprimeGrafo();
+//        System.out.println("\n"+listaNuevaCopia.getLista());
+        
+
         this.setVisible(false);
         GestionLugaresInteres formulario=new GestionLugaresInteres();
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         formulario.setLocation((d.width/2)-(formulario.getWidth()/2), (d.height/2)-(formulario.getHeight()/2));
         formulario.setVisible(true);
     }//GEN-LAST:event_jButton6MouseClicked
+
+    private void ConfirmarBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ConfirmarBtnMouseClicked
+        String lugar = LugaresAgregadosJlist.getSelectedValue();
+//        LinkedList lista = new LinkedList();
+//        ListaGuardada listaNueva = new ListaGuardada();
+        
+//        listaNueva.setLista(lista);
+        
+        listaNueva.getLista().append(lugar);
+        lista2.append(lugar);
+        System.out.println(listaNueva.getLista().getSize());
+        System.out.println("\n"+listaNueva.getLista());
+
+//////        if(listaNueva.getLista().getSize()!=10){
+//////            while(listaNueva.getLista().getSize()==0){
+//////                lista.append(lugar);
+//////                listaNueva.setLista(lista);
+//////                System.out.println(listaNueva.getLista());
+//////            }while(listaNueva.getLista().getSize()!=0){
+//////                lista.append(lugar);
+//////                listaNueva.getLista().append(lista);
+//////                System.out.println(listaNueva.getLista());
+//////            }
+//////        }
+//            lista.append(lugar);
+//        }
+//        while(lista.getSize()==0){
+//            lista.append(lugar);
+//            listaNueva.setLista(lista);
+//            System.out.println(listaNueva.getLista());
+//        }while(lista.getSize()!=1){
+//            lista.append(lugar);
+//            listaNueva.getLista().append(lista);
+//            System.out.println(listaNueva.getLista());
+//        }
+//        
+//        int borrar = LugaresAgregadosJlist.getSelectedIndex();
+//        listModel.remove(borrar);
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ConfirmarBtnMouseClicked
+
+    private void ArmarRutaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ArmarRutaMouseClicked
+//        ObjRuta.getRoute(originAddress, destinationAddress, waypoints, rootPaneCheckingEnabled,
+//                Route.mode.transit, Route.avoids.tolls)
+        int contador2 = 0;
+//        Route.mode modoTrans = TransporteBox.getSelectedItem();
+        if(lista2.getSize() == 2 && TransporteBox.getSelectedItem().equals("driving")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, null, true,
+                        Route.mode.driving, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+            
+        }else if(lista2.getSize() == 1 || lista2.getSize() == 0){
+            JOptionPane.showMessageDialog(null, "Debe tener por lo menos dos lugares agregados");
+        }else if(lista2.getSize() == 2 && TransporteBox.getSelectedItem().equals("driving")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, null, true,
+                        Route.mode.driving, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() == 2 && TransporteBox.getSelectedItem().equals("transit")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, null, true,
+                        Route.mode.transit, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() == 2 && TransporteBox.getSelectedItem().equals("walking")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, null, true,
+                        Route.mode.walking, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() > 2 && TransporteBox.getSelectedItem().equals("bicycling")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            ArrayList<String> listaWayPoints= new ArrayList();
+            while(lista2.getSize()!=0){
+                listaWayPoints.add(lista2.getElementValue(0).toString());
+                lista2.EliminarElemento(0);
+            }
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, listaWayPoints, true,
+                        Route.mode.bicycling, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() > 2 && TransporteBox.getSelectedItem().equals("driving")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            ArrayList<String> listaWayPoints= new ArrayList();
+            while(lista2.getSize()!=0){
+                listaWayPoints.add(lista2.getElementValue(0).toString());
+                lista2.EliminarElemento(0);
+            }
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, listaWayPoints, true,
+                        Route.mode.driving, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() > 2 && TransporteBox.getSelectedItem().equals("transit")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            ArrayList<String> listaWayPoints= new ArrayList();
+            while(lista2.getSize()!=0){
+                listaWayPoints.add(lista2.getElementValue(0).toString());
+                lista2.EliminarElemento(0);
+            }
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, listaWayPoints, true,
+                        Route.mode.transit, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(lista2.getSize() > 2 && TransporteBox.getSelectedItem().equals("walking")){
+            String originAddress = (lista2.getElementValue(0)).toString();
+            String destinationAddress = (lista2.getElementValue(lista2.getSize()-1)).toString();
+            lista2.EliminarElemento(0);
+            lista2.EliminarElemento(lista2.getSize()-1);
+            ArrayList<String> listaWayPoints= new ArrayList();
+            while(lista2.getSize()!=0){
+                listaWayPoints.add(lista2.getElementValue(0).toString());
+                lista2.EliminarElemento(0);
+            }
+            try {
+                resultadoRuta = ObjRuta.getRoute(originAddress, destinationAddress, listaWayPoints, true,
+                        Route.mode.walking, Route.avoids.nothing);
+                String[][] datosRuta=new String[resultadoRuta.length][3];
+                for(int i=0;i<datosRuta.length;i++){
+                    datosRuta[i][0]=resultadoRuta[i][0];
+                    datosRuta[i][1]=resultadoRuta[i][1];
+                    datosRuta[i][2]=Jsoup.parse(resultadoRuta[i][2]).text();
+                }
+                this.dibujarTabla(datosRuta);
+                this.dibujarMapa(ObjRuta.getPolilines().get(0));
+                this.RutaTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                this.RutaTabla.setRowSelectionInterval(0, 0);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(GestionLugarDestino.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }//GEN-LAST:event_ArmarRutaMouseClicked
+
+    private void RutaTablaMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RutaTablaMousePressed
+        try {
+            this.dibujarMapa(ObjRuta.getPolilines().get(this.RutaTabla.getSelectedRow()));
+        } catch (Exception ex) {
+        }
+    }//GEN-LAST:event_RutaTablaMousePressed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        try {
+            this.dibujarMapa(ObjRuta.getGeneralPolyline());
+        } catch (Exception ex) {
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -359,14 +803,20 @@ public class GestionLugarDestino extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AgregarDestinoBtn;
+    private javax.swing.JButton ArmarRuta;
     private javax.swing.JButton BuscarCooGestBtn;
     private javax.swing.JButton BuscarDirGesBtn;
+    private javax.swing.JButton ConfirmarBtn;
     private javax.swing.JTextField DireccionEncGest;
     private javax.swing.JTextField DireccionGestTxtField;
     private javax.swing.JButton EliminarLugarBtn;
     private javax.swing.JTextField LngTxtField;
     private javax.swing.JTextField LtdTxtField;
     private javax.swing.JList<String> LugaresAgregadosJlist;
+    private javax.swing.JLabel MapaImg;
+    private javax.swing.JTable RutaTabla;
+    private javax.swing.JComboBox<String> TransporteBox;
+    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -374,7 +824,9 @@ public class GestionLugarDestino extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables

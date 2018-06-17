@@ -9,8 +9,10 @@ package Interfaz;
 import Estructuras.Arbol;
 import Estructuras.BinarySearchTree;
 import Estructuras.Grafo;
+import Estructuras.LinkedList1;
+import Estructuras.ListaGuardada;
 import Estructuras.TreeNode;
-import java.util.*;
+import java.util.ArrayList;
 import Estructuras.UbicacionActual;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -43,6 +45,8 @@ public class Inicio extends javax.swing.JFrame {
             Point2D.Double resultadoDir = datosUbi.getCoordinates(DireccionTxtField.getText());
             if(resultadoDir.x != 0.0 && resultadoDir.y != 0.0){
                 DireccionEncontrada.setText(datosUbi.getAddressFound());
+                LatitudTxtField.setText(Double.toString(resultadoDir.x));
+                LongitudTxtField.setText(Double.toString(resultadoDir.y));
                 
                 ubicacion.setDireccion(datosUbi.getAddressFound());
                 ubicacion.setLatitud(resultadoDir.x);
@@ -265,6 +269,8 @@ public class Inicio extends javax.swing.JFrame {
     }//GEN-LAST:event_BuscarCooBtnMouseClicked
 
     private void ContinuarBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ContinuarBtnMouseClicked
+        LinkedList1 lista = new LinkedList1();
+        ListaGuardada listaNueva = new ListaGuardada();
         if(this.comprobarDireccion()==true){
             this.setVisible(false);
             GestionLugarDestino lugarDestinoVentana = new GestionLugarDestino();
@@ -275,25 +281,26 @@ public class Inicio extends javax.swing.JFrame {
             lugarDestinoVentana.setVisible(true);
         }
         try {
-            contador=contador+1;
-            
-            Grafo grafo = new Grafo();
-            grafo.agregarVertice(contador);
-            
-//            BinarySearchTree arbol = new BinarySearchTree();
-//            arbol.insert(DireccionEncontrada.getText());
-            Arbol arbolActual = new Arbol();
-            arbolActual.setNombre(DireccionEncontrada.getText());
-            
-            FileWriter writer = new FileWriter("Lugares.txt", true);
-            writer.write(contador+" " + DireccionEncontrada.getText());
-            writer.write(System.getProperty("line.separator"));
-            writer.close();
-            
-            FileWriter writer2 = new FileWriter("Favoritos.txt", true);
-            writer2.write(DireccionEncontrada.getText());
-            writer2.write(System.getProperty("line.separator"));
-            writer2.close();
+            lista.insert(DireccionEncontrada.getText());
+            listaNueva.setLista(lista);
+            System.out.println(listaNueva.getLista());
+//            contador=contador+1;
+//            
+//            Grafo grafo = new Grafo();
+//            grafo.agregarVertice(contador);
+//            
+//            Arbol arbolActual = new Arbol();
+//            arbolActual.setNombre(DireccionEncontrada.getText());
+//            
+//            FileWriter writer = new FileWriter("Lugares.txt", true);
+//            writer.write(contador+" " + DireccionEncontrada.getText());
+//            writer.write(System.getProperty("line.separator"));
+//            writer.close();
+//            
+//            FileWriter writer2 = new FileWriter("Favoritos.txt", true);
+//            writer2.write(DireccionEncontrada.getText());
+//            writer2.write(System.getProperty("line.separator"));
+//            writer2.close();
         }catch (Exception e){
             JOptionPane.showMessageDialog(null, "Error");
         }
